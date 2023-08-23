@@ -1,0 +1,9 @@
+ARG GO_VERSION
+FROM golang:${GO_VERSION}
+
+WORKDIR /work
+
+ARG JET_VERSION=v2.10.1
+RUN go install github.com/go-jet/jet/v2/cmd/jet@${JET_VERSION}
+
+CMD exec jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen
