@@ -22,6 +22,8 @@ jobs:
     needs: [setup-go]
     runs-on: ubuntu-latest
     steps:
+      - run: cat Makefile
+      - run: pwd
       - name: test
         run: make test
   vulncheck:
@@ -33,3 +35,4 @@ jobs:
         shell: bash
       - name: Run vulncheck
         run: govulncheck
+        shell: bash
