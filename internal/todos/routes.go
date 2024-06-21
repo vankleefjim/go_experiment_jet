@@ -36,50 +36,50 @@ func (t *TodoServer) Routes() http.Handler {
 	return mux
 }
 
-func (t *TodoServer) getAll(r *http.Request) (GetAllResponse, *httphelper.HTTPError) {
+func (t *TodoServer) getAll(r *http.Request) (GetAllResponse, int, *httphelper.HTTPError) {
 	ctx := r.Context()
 
 	todos, err := t.db.GetAll(ctx)
 	if err != nil {
-		return GetAllResponse{}, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
+		return GetAllResponse{}, 0, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
 	}
 
 	return GetAllResponse{
 		Todos: collections.Map(todos, FromModel),
-	}, nil
+	}, http.StatusOK, nil
 }
 
-func (t *TodoServer) get(r *http.Request) (GetOneResponse, *httphelper.HTTPError) {
+func (t *TodoServer) get(r *http.Request) (GetOneResponse, int, *httphelper.HTTPError) {
 	ctx := r.Context()
 
 	idS := r.PathValue("id")
 	id, err := uuid.Parse(idS)
 	if err != nil {
-		return GetOneResponse{}, httphelper.NewError("invalid id: "+idS, http.StatusBadRequest, fmt.Errorf("unable to parse id %q: %w", idS, err))
+		return GetOneResponse{}, 0, httphelper.NewError("invalid id: "+idS, http.StatusBadRequest, fmt.Errorf("unable to parse id %q: %w", idS, err))
 	}
 
 	todo, err := t.db.GetByID(ctx, id)
 	if err != nil {
-		return GetOneResponse{}, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
+		return GetOneResponse{}, 0, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
 	}
 
 	return GetOneResponse{
 		Todo: FromModel(todo),
-	}, nil
+	}, http.StatusOK, nil
 }
 
-func (t *TodoServer) put(r *http.Request) (PutResponse, *httphelper.HTTPError) {
+func (t *TodoServer) put(r *http.Request) (PutResponse, int, *httphelper.HTTPError) {
 	ctx := r.Context()
 
 	todo := Todo{}
 	err := json.NewDecoder(r.Body).Decode(&todo)
 	if err != nil {
-		return PutResponse{}, httphelper.NewError("invalid request body", http.StatusBadRequest, fmt.Errorf("unable to decode json body: %w", err))
+		return PutResponse{}, 0, httphelper.NewError("invalid request body", http.StatusBadRequest, fmt.Errorf("unable to decode json body: %w", err))
 	}
 
 	err = todo.Validate()
 	if err != nil {
-		return PutResponse{}, httphelper.NewError(err.Error(), http.StatusBadRequest, fmt.Errorf("validation failed: %w", err))
+		return PutResponse{}, 0, httphelper.NewError(err.Error(), http.StatusBadRequest, fmt.Errorf("validation failed: %w", err))
 	}
 
 	// Make sure to not accept ID from caller.
@@ -87,8 +87,8 @@ func (t *TodoServer) put(r *http.Request) (PutResponse, *httphelper.HTTPError) {
 
 	err = t.db.Create(ctx, ToModel(todo))
 	if err != nil {
-		return PutResponse{}, httphelper.NewError("unable to create todo", http.StatusInternalServerError, fmt.Errorf("unable to create todo: %w", err))
+		return PutResponse{}, 0, httphelper.NewError("unable to create todo", http.StatusInternalServerError, fmt.Errorf("unable to create todo: %w", err))
 	}
 
-	return PutResponse{Todo: todo}, nil
+	return PutResponse{Todo: todo}, http.StatusOK, nil
 }

@@ -1,18 +1,32 @@
 package api
 
 import (
-	"database/sql"
+	"context"
 	"net/http"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/config"
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
 	"github.com/vankleefjim/go_experiment_jet/internal/todos"
 
 	"log/slog"
 )
 
-func Routes(cfg config.Server, conn *sql.DB) *http.ServeMux {
+func Routes(ctx context.Context, cfg config.Server) *http.ServeMux {
+	// Create the dependencies here.
+	// If possible, use the ctx to control if something needs to be stopped or similar
+	// Would be best if only the shared ones are here and the others
+	// directly in the packages that define the routes.
+	dbConn := must(dbconn.SQLConnect(cfg.DB))
+	go func(){
+		<-ctx.Done()
+		cErr := dbConn.Close()
+		if cErr!= nil{
+			slog.With("err",cErr).ErrorContext(ctx,"failed closing db connection")
+		}
+	}()
+
 	// This extra level is not needed when writing a microservice
 	mux := http.NewServeMux()
 
@@ -20,7 +34,7 @@ func Routes(cfg config.Server, conn *sql.DB) *http.ServeMux {
 
 	mux.Handle("/ping", httphelper.Log(pong()))
 
-	todoDB := db.NewTodo(conn)
+	todoDB := db.NewTodo(dbConn)
 	mux.Handle("/todo/",
 		httphelper.Log(
 			http.StripPrefix("/todo",
@@ -35,4 +49,12 @@ func pong() http.Handler {
 			slog.With("err", err).ErrorContext(r.Context(), "unable to respond to ping")
 		}
 	})
+}
+
+
+func must[T any](x T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return x
 }
