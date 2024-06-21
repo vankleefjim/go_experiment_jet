@@ -15,7 +15,7 @@ type MethodPlexer struct {
 func MethodPlexMiddleware(p MethodPlexer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodGet:
+		case r.Method == http.MethodGet && p.Get != nil:
 			p.Get(w, r)
 		case r.Method == http.MethodPost && p.Post != nil:
 			p.Post(w, r)

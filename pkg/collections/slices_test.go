@@ -7,6 +7,7 @@ import (
 )
 
 func Test_Slices_Map(t *testing.T) {
+	t.Parallel()
 	tcs := map[string]struct {
 		given []int
 		want  []int
@@ -23,6 +24,7 @@ func Test_Slices_Map(t *testing.T) {
 
 	for name, tc := range tcs {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			// given
 			// when
 			got := Map(tc.given, func(i int) int { return i * i })

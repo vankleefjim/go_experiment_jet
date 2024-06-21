@@ -1,6 +1,6 @@
 module github.com/vankleefjim/go_experiment_jet
 
-go 1.22.0
+go 1.22
 
 require github.com/jackc/pgx/v5 v5.4.3
 
