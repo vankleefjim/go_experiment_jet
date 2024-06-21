@@ -8,10 +8,10 @@ include .env
 migrate-up:
 	go run cmd/migrate/main.go up
 
-run: migrate-up
+run: start gen-models
 	go run cmd/main/main.go
 
-docker-jet:
+docker-jet: migrate-up
 	docker build -f Dockerfile.jet -t jet \
 	--build-arg GO_VERSION=${GO_VERSION} \
 	.
@@ -19,11 +19,14 @@ docker-jet:
 gen-models: docker-jet
 	docker run --env-file .env --network host -v .:/work jet
 
-gen-models2:
+gen-models2: migrate-up
 	jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen
 
 start:
-	docker-compose up
+	docker-compose up -d --wait
 
-restart-clean:
-	docker-compose down --volumes && docker-compose up
+stop:
+	docker-compose down --volumes
+
+restart-clean: stop run
+	

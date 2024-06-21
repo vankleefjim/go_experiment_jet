@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type Todos struct {
+type Todo struct {
 	ID   uuid.UUID `sql:"primary_key"`
 	Task string
 	Due  *time.Time

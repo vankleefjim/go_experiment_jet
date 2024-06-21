@@ -3,12 +3,12 @@ package main
 import (
 	"github.com/caarlos0/env/v9"
 	"github.com/spf13/cobra"
-	"jvk.com/things/internal/config"
-	"jvk.com/things/internal/migrate"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
+	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
 )
 
 func main() {
-	cfg := config.DB{}
+	cfg := dbconn.Config{}
 	err := env.Parse(&cfg)
 	if err != nil {
 		panic(err)

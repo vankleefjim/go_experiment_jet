@@ -11,5 +11,5 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	SchemaMigrations = SchemaMigrations.FromSchema(schema)
-	Todos = Todos.FromSchema(schema)
+	Todo = Todo.FromSchema(schema)
 }

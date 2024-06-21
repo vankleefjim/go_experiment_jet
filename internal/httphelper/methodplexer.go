@@ -1,6 +1,9 @@
 package httphelper
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
 type MethodPlexer struct {
 	Get  http.HandlerFunc
@@ -11,14 +14,18 @@ type MethodPlexer struct {
 
 func MethodPlexMiddleware(p MethodPlexer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
+		switch {
+		case r.Method == http.MethodGet:
 			p.Get(w, r)
-		case http.MethodPost:
+		case r.Method == http.MethodPost && p.Post != nil:
 			p.Post(w, r)
-		case http.MethodPut:
+		case r.Method == http.MethodPut && p.Put != nil:
 			p.Put(w, r)
 		default:
+			slog.With(
+				"method", r.Method,
+				"path", r.URL.Path,
+			).DebugContext(r.Context(), "Method not allowed")
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	}

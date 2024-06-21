@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"jvk.com/things/internal/api"
-	"jvk.com/things/internal/config"
-	"jvk.com/things/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/api"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 )
 
 type Server struct {
@@ -31,7 +31,7 @@ func (s *Server) Run(cfg config.Server) {
 	go listenShutdown()
 
 	// Create all the dependencies here.
-	dbConn := must(db.SQLConnect(cfg.DB))
+	dbConn := must(dbconn.SQLConnect(cfg.DB))
 
 	mux := api.Routes(cfg, dbConn)
 	httpServer := &http.Server{
@@ -72,14 +72,21 @@ func setupShutdown(shutdown func(context.Context)) (listenShutdown func()) {
 			close(errC)
 		}()
 		<-notifyCtx.Done()
-		slog.Info("signal received, shutting down")
+		slog.InfoContext(ctx, "signal received, shutting down")
 	}
 }
 
 func (s *Server) Shutdown(ctx context.Context) {
 	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
-		slog.With("err", err).Error("unable to shutdown HTTP server")
+		slog.With("err", err).ErrorContext(ctx, "unable to shutdown HTTP server")
 	}
 	close(s.done)
+}
+
+func must[T any](x T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return x
 }
