@@ -1,7 +1,8 @@
 # TODO PHONY
 
-## TODO not in CI ;)
-include .env
+ifndef CI
+	include .env
+endif
 
 .EXPORT_ALL_VARIABLES:
 
