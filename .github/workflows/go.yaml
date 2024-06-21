@@ -2,12 +2,11 @@ name: go
 
 on: [push] # TODO should this just be merge request + main branch?
 # TODO add github actions extension to .nix
-env:
-  BASE_IMAGE: go-1.22.4
+
 
 jobs:
   test:
-    runs-on: $BASE_IMAGE
+    runs-on: go-1.22.4
     steps:
       - uses: actions/checkout@v4
       - name: Go version
