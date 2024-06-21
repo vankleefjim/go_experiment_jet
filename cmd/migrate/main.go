@@ -1,10 +1,11 @@
 package main
 
 import (
+	"things/internal/config"
+	"things/internal/migrate"
+
 	"github.com/caarlos0/env/v9"
 	"github.com/spf13/cobra"
-	"jvk.com/things/internal/config"
-	"jvk.com/things/internal/migrate"
 )
 
 func main() {

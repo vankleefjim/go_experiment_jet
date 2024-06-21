@@ -10,6 +10,11 @@ services:
       - POSTGRES_USER=things
       - POSTGRES_PASSWORD=pg-pw
       - POSTGRES_DB=things
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 volumes:
   db:
     driver: local

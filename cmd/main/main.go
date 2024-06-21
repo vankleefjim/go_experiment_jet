@@ -1,9 +1,11 @@
 package main
 
 import (
+	"things/internal/config"
+
+	"things/internal/server"
+
 	"github.com/caarlos0/env/v9"
-	"jvk.com/things/internal/config"
-	"jvk.com/things/internal/server"
 )
 
 func main() {

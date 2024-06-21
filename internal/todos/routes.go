@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"things/internal/db"
+	"things/internal/httphelper"
+	"things/pkg/collections"
+
 	"github.com/google/uuid"
-	"jvk.com/things/internal/db"
-	"jvk.com/things/internal/httphelper"
-	"jvk.com/things/pkg/collections"
 )
 
 type TodoServer struct {
-	db *db.TodosDB
+	db *db.TodoDB
 }
 
-func New(db *db.TodosDB) *TodoServer { return &TodoServer{db: db} }
+func New(db *db.TodoDB) *TodoServer { return &TodoServer{db: db} }
 
-func (t *TodoServer) Routes() http.HandlerFunc {
+func (t *TodoServer) Routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", httphelper.MethodPlexMiddleware(
@@ -25,10 +26,14 @@ func (t *TodoServer) Routes() http.HandlerFunc {
 			Get: httphelper.StructResponse[GetAllResponse](t.getAll),
 			Put: httphelper.StructResponse[PutResponse](t.put),
 		},
-	),
-	)
+	))
+	mux.HandleFunc("/{id}", httphelper.MethodPlexMiddleware(
+		httphelper.MethodPlexer{
+			Get: httphelper.StructResponse[GetOneResponse](t.get),
+		},
+	))
 
-	return mux.ServeHTTP
+	return mux
 }
 
 func (t *TodoServer) getAll(r *http.Request) (GetAllResponse, *httphelper.HTTPError) {
@@ -41,6 +46,25 @@ func (t *TodoServer) getAll(r *http.Request) (GetAllResponse, *httphelper.HTTPEr
 
 	return GetAllResponse{
 		Todos: collections.Map(todos, FromModel),
+	}, nil
+}
+
+func (t *TodoServer) get(r *http.Request) (GetOneResponse, *httphelper.HTTPError) {
+	ctx := r.Context()
+
+	idS := r.PathValue("id")
+	id, err := uuid.Parse(idS)
+	if err != nil {
+		return GetOneResponse{}, httphelper.NewError("invalid id: "+idS, http.StatusBadRequest, fmt.Errorf("unable to parse id %q: %w", idS, err))
+	}
+
+	todo, err := t.db.GetByID(ctx, id)
+	if err != nil {
+		return GetOneResponse{}, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
+	}
+
+	return GetOneResponse{
+		Todo: FromModel(todo),
 	}, nil
 }
 

@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
+	"things/internal/config"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"jvk.com/things/internal/config"
 )
 
 func SQLConnect(cfg config.DB) (*sql.DB, error) {

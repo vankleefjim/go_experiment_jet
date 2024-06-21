@@ -1,6 +1,6 @@
-module jvk.com/things
+module things
 
-go 1.21.0
+go 1.22.0
 
 require github.com/jackc/pgx/v5 v5.4.3
 
@@ -27,6 +27,6 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/text v0.9.0 // indirect
 )

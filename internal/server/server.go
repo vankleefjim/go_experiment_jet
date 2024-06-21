@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"jvk.com/things/internal/api"
-	"jvk.com/things/internal/config"
-	"jvk.com/things/internal/db"
+	"things/internal/api"
+	"things/internal/config"
+	"things/internal/db"
 )
 
 type Server struct {
@@ -72,14 +72,14 @@ func setupShutdown(shutdown func(context.Context)) (listenShutdown func()) {
 			close(errC)
 		}()
 		<-notifyCtx.Done()
-		slog.Info("signal received, shutting down")
+		slog.InfoContext(ctx, "signal received, shutting down")
 	}
 }
 
 func (s *Server) Shutdown(ctx context.Context) {
 	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
-		slog.With("err", err).Error("unable to shutdown HTTP server")
+		slog.With("err", err).ErrorContext(ctx, "unable to shutdown HTTP server")
 	}
 	close(s.done)
 }

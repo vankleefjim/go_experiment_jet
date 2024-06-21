@@ -4,12 +4,13 @@ import (
 	"errors"
 	"time"
 
+	"things/internal/db/.gen/things/public/model"
+
 	"github.com/google/uuid"
-	"jvk.com/things/internal/db/.gen/things/public/model"
 )
 
 type Todo struct {
-	ID   uuid.UUID  `json:"id"`
+	ID   uuid.UUID  `json:"id"` // Cannot be set by caller.
 	Task string     `json:"task"`
 	Due  *time.Time `json:"due"`
 }
@@ -37,7 +38,11 @@ type PutResponse struct {
 	Todo Todo `json:"todo"`
 }
 
-func FromModel(in model.Todos) Todo {
+type GetOneResponse struct {
+	Todo Todo `json:"todo"`
+}
+
+func FromModel(in model.Todo) Todo {
 	return Todo{
 		ID:   in.ID,
 		Task: in.Task,
@@ -45,8 +50,8 @@ func FromModel(in model.Todos) Todo {
 	}
 }
 
-func ToModel(in Todo) model.Todos {
-	return model.Todos{
+func ToModel(in Todo) model.Todo {
+	return model.Todo{
 		ID:   in.ID,
 		Task: in.Task,
 		Due:  in.Due,

@@ -5,21 +5,23 @@ import (
 	"database/sql"
 	"fmt"
 
-	//. "github.com/go-jet/jet/v2/postgres"
+	"things/internal/db/.gen/things/public/model"
+	. "things/internal/db/.gen/things/public/table"
 
-	"jvk.com/things/internal/db/.gen/things/public/model"
-	. "jvk.com/things/internal/db/.gen/things/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
+
+	"github.com/google/uuid"
 )
 
-type TodosDB struct {
+type TodoDB struct {
 	conn *sql.DB
 }
 
-func NewTodos(conn *sql.DB) *TodosDB { return &TodosDB{conn: conn} }
+func NewTodo(conn *sql.DB) *TodoDB { return &TodoDB{conn: conn} }
 
-func (db *TodosDB) GetAll(ctx context.Context) ([]model.Todos, error) {
-	todos := []model.Todos{}
-	getAllStmt := Todos.SELECT(Todos.AllColumns)
+func (db *TodoDB) GetAll(ctx context.Context) ([]model.Todo, error) {
+	todos := []model.Todo{}
+	getAllStmt := Todo.SELECT(Todo.AllColumns)
 	err := getAllStmt.QueryContext(ctx, db.conn, &todos)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query all todos: %w", err)
@@ -27,8 +29,24 @@ func (db *TodosDB) GetAll(ctx context.Context) ([]model.Todos, error) {
 	return todos, nil
 }
 
-func (db *TodosDB) Create(ctx context.Context, todo model.Todos) error {
-	insertStmt := Todos.INSERT(Todos.AllColumns).MODEL(todo)
+func (db *TodoDB) GetByID(ctx context.Context, id uuid.UUID) (model.Todo, error) {
+	todos := []model.Todo{}
+	getOneStmt := Todo.SELECT(Todo.AllColumns).WHERE(Todo.ID.EQ(UUID(id)))
+	err := getOneStmt.QueryContext(ctx, db.conn, &todos)
+	if err != nil {
+		return model.Todo{}, fmt.Errorf("unable to query all todos: %w", err)
+	}
+	if len(todos) > 1 {
+		return model.Todo{}, fmt.Errorf("found %d entries with ID %q", len(todos), id)
+	}
+	if len(todos) == 0 {
+		return model.Todo{}, newTodoNotFoundError(fmt.Sprintf("id = %q", id))
+	}
+	return todos[0], nil
+}
+
+func (db *TodoDB) Create(ctx context.Context, todo model.Todo) error {
+	insertStmt := Todo.INSERT(Todo.AllColumns).MODEL(todo)
 	_, err := insertStmt.ExecContext(ctx, db.conn)
 	if err != nil {
 		return fmt.Errorf("unable to query all todos: %w", err)
@@ -36,4 +54,11 @@ func (db *TodosDB) Create(ctx context.Context, todo model.Todos) error {
 	// Inserting 1 new row: no need to check result
 
 	return nil
+}
+
+func newTodoNotFoundError(identifier string) *NotFoundError {
+	return &NotFoundError{
+		Resource:   "todo",
+		Identifier: identifier,
+	}
 }
