@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"things/internal/db/.gen/things/public/model"
+	"github.com/vankleefjim/go_experiment_jet/internal/db/.gen/things/public/model"
 
 	"github.com/google/uuid"
 )

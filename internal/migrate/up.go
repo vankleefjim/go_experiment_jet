@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 
-	"things/internal/config"
-	"things/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/db"
 
 	"github.com/spf13/cobra"
 

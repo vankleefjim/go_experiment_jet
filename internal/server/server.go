@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"things/internal/api"
-	"things/internal/config"
-	"things/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/api"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/db"
 )
 
 type Server struct {

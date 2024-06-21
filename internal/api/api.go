@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 
-	"things/internal/config"
-	"things/internal/db"
-	"things/internal/httphelper"
-	"things/internal/todos"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
+	"github.com/vankleefjim/go_experiment_jet/internal/todos"
 
 	"log/slog"
 )

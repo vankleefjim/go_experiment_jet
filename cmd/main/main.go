@@ -1,9 +1,9 @@
 package main
 
 import (
-	"things/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
 
-	"things/internal/server"
+	"github.com/vankleefjim/go_experiment_jet/internal/server"
 
 	"github.com/caarlos0/env/v9"
 )

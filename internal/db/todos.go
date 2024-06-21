@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"things/internal/db/.gen/things/public/model"
-	. "things/internal/db/.gen/things/public/table"
+	"github.com/vankleefjim/go_experiment_jet/internal/db/.gen/things/public/model"
+	. "github.com/vankleefjim/go_experiment_jet/internal/db/.gen/things/public/table"
 
 	. "github.com/go-jet/jet/v2/postgres"
 

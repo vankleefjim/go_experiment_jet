@@ -1,8 +1,8 @@
 package main
 
 import (
-	"things/internal/config"
-	"things/internal/migrate"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
 
 	"github.com/caarlos0/env/v9"
 	"github.com/spf13/cobra"

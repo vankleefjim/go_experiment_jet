@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"things/internal/db"
-	"things/internal/httphelper"
-	"things/pkg/collections"
+	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
+	"github.com/vankleefjim/go_experiment_jet/pkg/collections"
 
 	"github.com/google/uuid"
 )

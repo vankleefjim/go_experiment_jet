@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"things/internal/config"
+	"github.com/vankleefjim/go_experiment_jet/internal/config"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
