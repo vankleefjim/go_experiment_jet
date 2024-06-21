@@ -30,11 +30,11 @@ func Test_StructResponse_ok(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	rt := httptest.NewRequest(http.MethodGet, "/asdf", http.NoBody)
-	handler := StructResponse(func(r *http.Request) (something, int, *HTTPError) {
+	handler := StructResponse(func(r *http.Request) (*OK[something], *HTTPError) {
 		if r != rt {
 			t.Errorf("mismatched request. Got %v, want %v", r, rt)
 		}
-		return something{A: "hello", AaBb: 2}, http.StatusNoContent, nil
+		return &OK[something]{Body: something{A: "hello", AaBb: 2}, Status: http.StatusNoContent}, nil
 	})
 	// when
 	handler.ServeHTTP(w, rt)
@@ -68,11 +68,11 @@ func Test_StructResponse_err(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	rt := httptest.NewRequest(http.MethodGet, "/asdf", http.NoBody)
-	handler := StructResponse(func(r *http.Request) (int, int, *HTTPError) {
+	handler := StructResponse(func(r *http.Request) (*OK[int], *HTTPError) {
 		if r != rt {
 			t.Errorf("mismatched request. Got %v, want %v", r, rt)
 		}
-		return 0, 0, NewError("What doing?", http.StatusExpectationFailed, errors.New("internal info"))
+		return nil, NewError("What doing?", http.StatusExpectationFailed, errors.New("internal info"))
 	})
 	// when
 	handler.ServeHTTP(w, rt)
