@@ -32,6 +32,8 @@ stop:
 restart-clean: stop run
 	
 
-
 test:
 	go test -shuffle on -race ./...
+
+lint: # TODO add this to .nix
+	golangci-lint run
