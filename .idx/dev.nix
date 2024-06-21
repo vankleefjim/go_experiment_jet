@@ -3,6 +3,7 @@
 { pkgs, ... }: {
   # Which nixpkgs channel to use.
   channel = "unstable"; # "stable-23.11"; # or "unstable"
+  # needs unstable to have latest go version
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.go

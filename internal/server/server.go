@@ -12,7 +12,7 @@ import (
 
 	"github.com/vankleefjim/go_experiment_jet/internal/api"
 	"github.com/vankleefjim/go_experiment_jet/internal/config"
-	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 )
 
 type Server struct {
@@ -31,7 +31,7 @@ func (s *Server) Run(cfg config.Server) {
 	go listenShutdown()
 
 	// Create all the dependencies here.
-	dbConn := must(db.SQLConnect(cfg.DB))
+	dbConn := must(dbconn.SQLConnect(cfg.DB))
 
 	mux := api.Routes(cfg, dbConn)
 	httpServer := &http.Server{
@@ -82,4 +82,11 @@ func (s *Server) Shutdown(ctx context.Context) {
 		slog.With("err", err).ErrorContext(ctx, "unable to shutdown HTTP server")
 	}
 	close(s.done)
+}
+
+func must[T any](x T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return x
 }

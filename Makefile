@@ -25,5 +25,8 @@ gen-models2: migrate-up
 start:
 	docker-compose up -d --wait
 
-restart-clean:
-	docker-compose down --volumes && make run
+stop:
+	docker-compose down --volumes
+
+restart-clean: stop run
+	

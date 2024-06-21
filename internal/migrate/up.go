@@ -5,8 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/config"
-	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 
 	"github.com/spf13/cobra"
 
@@ -16,11 +15,11 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Up(cfg config.DB) *cobra.Command {
+func Up(cfg dbconn.Config) *cobra.Command {
 	c := &cobra.Command{
 		Use: "up",
 		Run: func(cmd *cobra.Command, args []string) {
-			conn := must(db.SQLConnect(cfg))
+			conn := must(dbconn.SQLConnect(cfg))
 			driver := must(postgres.WithInstance(conn, &postgres.Config{}))
 			migrator := must(migrate.NewWithDatabaseInstance("file://./migrations", "postgres", driver))
 
@@ -37,4 +36,11 @@ func Up(cfg config.DB) *cobra.Command {
 		},
 	}
 	return c
+}
+
+func must[T any](x T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return x
 }

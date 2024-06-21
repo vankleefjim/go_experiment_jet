@@ -1,15 +1,14 @@
 package main
 
 import (
-	"github.com/vankleefjim/go_experiment_jet/internal/config"
-	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
-
 	"github.com/caarlos0/env/v9"
 	"github.com/spf13/cobra"
+	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
+	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
 )
 
 func main() {
-	cfg := config.DB{}
+	cfg := dbconn.Config{}
 	err := env.Parse(&cfg)
 	if err != nil {
 		panic(err)
