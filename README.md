@@ -1,3 +1,1 @@
-This is a simple hello, world demonstration web server.
-
-It serves version information on /version and answers any other request like /name by saying "Hello, name!".
+This is an experiment on using go-jet for database access. Also setup to be used inside project IDX.
