@@ -1,11 +1,12 @@
 module github.com/vankleefjim/go_experiment_jet
 
-go 1.22.0
+go 1.22
 
 require github.com/jackc/pgx/v5 v5.4.3
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/lib/pq v1.10.8 // indirect

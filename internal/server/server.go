@@ -12,7 +12,6 @@ import (
 
 	"github.com/vankleefjim/go_experiment_jet/internal/api"
 	"github.com/vankleefjim/go_experiment_jet/internal/config"
-	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 )
 
 type Server struct {
@@ -27,13 +26,10 @@ func New() *Server {
 }
 
 func (s *Server) Run(cfg config.Server) {
-	listenShutdown := setupShutdown(s.Shutdown)
+	ctx, listenShutdown := setupShutdown(s.Shutdown)
 	go listenShutdown()
 
-	// Create all the dependencies here.
-	dbConn := must(dbconn.SQLConnect(cfg.DB))
-
-	mux := api.Routes(cfg, dbConn)
+	mux := api.Routes(ctx, cfg)
 	httpServer := &http.Server{
 		Handler: mux,
 		Addr:    addr(cfg.HTTP),
@@ -60,12 +56,12 @@ func addr(cfg config.HTTP) string {
 	return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 }
 
-func setupShutdown(shutdown func(context.Context)) (listenShutdown func()) {
+func setupShutdown(shutdown func(context.Context)) (notifyCtx context.Context, listenShutdown func()) {
 	errC := make(chan error, 1)
 	ctx := context.Background()
 	notifyCtx, stop := signal.NotifyContext(ctx,
 		os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	return func() {
+	return notifyCtx, func() {
 		defer func() {
 			shutdown(ctx)
 			stop()
@@ -82,11 +78,4 @@ func (s *Server) Shutdown(ctx context.Context) {
 		slog.With("err", err).ErrorContext(ctx, "unable to shutdown HTTP server")
 	}
 	close(s.done)
-}
-
-func must[T any](x T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-	return x
 }

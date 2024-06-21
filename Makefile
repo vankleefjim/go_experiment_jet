@@ -1,7 +1,8 @@
 # TODO PHONY
 
-## TODO not in CI ;)
-include .env
+ifndef CI
+	include .env
+endif
 
 .EXPORT_ALL_VARIABLES:
 
@@ -30,3 +31,9 @@ stop:
 
 restart-clean: stop run
 	
+
+test:
+	go test -shuffle on -race ./...
+
+lint: # TODO add this to .nix
+	golangci-lint run
