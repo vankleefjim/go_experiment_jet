@@ -30,3 +30,7 @@ stop:
 
 restart-clean: stop run
 	
+
+
+test:
+	go test -shuffle on -race ./...
