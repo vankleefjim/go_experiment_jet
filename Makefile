@@ -23,10 +23,10 @@ gen-models2: migrate-up
 	jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen
 
 start:
-	docker-compose up -d --wait
+	${COMPOSE_CMD} up -d --wait
 
 stop:
-	docker-compose down --volumes
+	${COMPOSE_CMD} down --volumes
 
 restart-clean: stop run
 	
