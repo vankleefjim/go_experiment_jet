@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -50,6 +51,7 @@ func setupDB() {
 		Started: true,
 	})
 	failOn(err)
+	time.Sleep(time.Second) // just to try it?
 
 	info, err := dbContainer.Inspect(ctx)
 	failOn(err)
