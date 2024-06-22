@@ -15,7 +15,7 @@ func main() {
 	}
 
 	rootCmd := &cobra.Command{Use: "migrate"}
-	rootCmd.AddCommand(migrate.Up(cfg))
+	rootCmd.AddCommand(migrate.UpCmd(cfg))
 
 	err = rootCmd.Execute()
 	if err != nil {
