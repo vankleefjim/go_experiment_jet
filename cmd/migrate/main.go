@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/caarlos0/env/v9"
 	"github.com/spf13/cobra"
-	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
+	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
 )
 
 func main() {

@@ -1,6 +1,6 @@
 package config
 
-import "github.com/vankleefjim/go_experiment_jet/internal/dbconn"
+import "github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
 
 type Server struct {
 	DB   dbconn.Config

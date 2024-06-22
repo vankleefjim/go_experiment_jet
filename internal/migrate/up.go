@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
+	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
 
 	"github.com/spf13/cobra"
 
@@ -21,6 +21,7 @@ func Up(cfg dbconn.Config) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			conn := must(dbconn.SQLConnect(cfg))
 			driver := must(postgres.WithInstance(conn, &postgres.Config{}))
+			// TODO think about better way to include them
 			migrator := must(migrate.NewWithDatabaseInstance("file://./migrations", "postgres", driver))
 
 			if err := migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {

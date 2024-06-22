@@ -6,9 +6,9 @@ import (
 
 	"github.com/vankleefjim/go_experiment_jet/internal/config"
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
-	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
 	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
 	"github.com/vankleefjim/go_experiment_jet/internal/todos"
+	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
 
 	"log/slog"
 )
