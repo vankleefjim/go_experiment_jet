@@ -52,7 +52,12 @@ func setupDB() {
 	})
 	failOn(err)
 	time.Sleep(time.Second) // just to try it?
-
+	host, err := dbContainer.Host(ctx)
+	failOn(err)
+	slog.With("host", host).InfoContext(ctx, "host")
+	networks, err := dbContainer.Networks(ctx)
+	failOn(err)
+	slog.With("networks", networks).InfoContext(ctx, "networks")
 	info, err := dbContainer.Inspect(ctx)
 	failOn(err)
 	slog.With("info", info).InfoContext(ctx, "some info")
