@@ -19,11 +19,11 @@ func Routes(ctx context.Context, cfg config.Server) *http.ServeMux {
 	// Would be best if only the shared ones are here and the others
 	// directly in the packages that define the routes.
 	dbConn := must(dbconn.SQLConnect(cfg.DB))
-	go func(){
+	go func() {
 		<-ctx.Done()
 		cErr := dbConn.Close()
-		if cErr!= nil{
-			slog.With("err",cErr).ErrorContext(ctx,"failed closing db connection")
+		if cErr != nil {
+			slog.With("err", cErr).ErrorContext(ctx, "failed closing db connection")
 		}
 	}()
 
@@ -50,7 +50,6 @@ func pong() http.Handler {
 		}
 	})
 }
-
 
 func must[T any](x T, err error) T {
 	if err != nil {

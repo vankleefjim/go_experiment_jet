@@ -7,12 +7,17 @@ import (
 	"log/slog"
 )
 
-func StructResponse[T any](handler func(r *http.Request) (T,int, *HTTPError)) http.HandlerFunc {
+type OK[T any] struct {
+	Body   T
+	Status int
+}
+
+func StructResponse[T any](handler func(r *http.Request) (*OK[T], *HTTPError)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// I think it makes sense to give the entire request to the handler. In general handlers are
 		// varied in what they need from the request, be it path params, query params, body, header, ...
 		// and it doesn't make sense to abstract that away because in the end it would just recreate http.Request.
-		response, statusCode, hErr := handler(r)
+		response, hErr := handler(r)
 		if hErr != nil {
 			slog.With(
 				"status", hErr.Code,
@@ -29,9 +34,17 @@ func StructResponse[T any](handler func(r *http.Request) (T,int, *HTTPError)) ht
 			}
 			return
 		}
-		w.WriteHeader(statusCode)
+		if response == nil {
+			slog.ErrorContext(r.Context(), "http error and response nil")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		// Finally happy path.
+		if response.Status != 0 {
+			w.WriteHeader(response.Status)
+		}
 		w.Header().Add("Content-Type", "application/json")
-		err := json.NewEncoder(w).Encode(response)
+		err := json.NewEncoder(w).Encode(response.Body)
 		if err != nil {
 			slog.With("error", err.Error()).
 				ErrorContext(r.Context(), "unable to write json response")
