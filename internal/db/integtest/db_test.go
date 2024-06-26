@@ -2,6 +2,7 @@ package integtest
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"os"
 	"strconv"
@@ -64,7 +65,11 @@ func setupDB(t *testing.T) {
 	info, err := dbContainer.Inspect(ctx)
 	failOn(err)
 	slog.With("info", info).InfoContext(ctx, "some info")
-
+	_, r, err := dbContainer.Exec(ctx, []string{"pg_isready", "-U", dbUser, "-d", dbName})
+	failOn(err)
+	read, err := io.ReadAll(r)
+	failOn(err)
+	t.Error(string(read))
 	failOn(migrate.Up(ctx, dbconn.Config{
 		User:     dbUser,
 		Password: dbPassword,
