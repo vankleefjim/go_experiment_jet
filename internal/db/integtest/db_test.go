@@ -76,6 +76,9 @@ func setupDB() {
 				WithOccurrence(2).WithStartupTimeout(5*time.Second)),
 	)
 	failOn(err)
+	mappedPort, err := pgContainer.MappedPort(ctx, "5432")
+	failOn(err)
+	slog.With("mapped port", mappedPort).InfoContext(ctx, "mapped port?")
 
 	// t.Cleanup(func() {
 	// 	if err := pgContainer.Terminate(ctx); err != nil {
@@ -110,7 +113,7 @@ func setupDB() {
 		Password: dbPassword,
 		Name:     dbName,
 		Address:  "localhost",
-		Port:     dbPort,
+		Port:     mappedPort.Int(),
 	}))
 }
 
