@@ -50,6 +50,11 @@ func setupDB(t *testing.T) {
 			WaitingFor: wait.ForExec([]string{
 				"pg_isready", "-U", dbUser, "-d", dbName}),
 			// WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
+			LogConsumerCfg: &testcontainers.LogConsumerConfig{
+				Consumers: []testcontainers.LogConsumer{
+					&myOtherLogger{},
+				},
+			},
 		},
 		Started: true,
 		Logger:  &myLogger{},
@@ -103,4 +108,10 @@ func (m *myLogger) Printf(format string, v ...interface{}) {
 	}
 	l = l.With("message", format)
 	l.Info("printf inside docker")
+}
+
+type myOtherLogger struct{}
+
+func (m *myOtherLogger) Accept(l testcontainers.Log) {
+	slog.With("content", string(l.Content), "type", l.LogType).Info("msg in container?")
 }
