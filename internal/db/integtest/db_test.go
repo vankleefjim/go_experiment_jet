@@ -5,7 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"os/exec"
 	"strconv"
 	"testing"
 	"time"
@@ -66,17 +65,14 @@ func setupDB(t *testing.T) {
 	info, err := dbContainer.Inspect(ctx)
 	failOn(err)
 	slog.With("info", info).InfoContext(ctx, "some info")
-	_, r, err := dbContainer.Exec(ctx, []string{"pg_isready", "-U", dbUser, "-d", dbName})
-	failOn(err)
 	state, err := dbContainer.State(ctx)
 	failOn(err)
-	t.Errorf("state: %s", state.Status)
+	slog.With("state", state.Status).InfoContext(ctx, "state")
+	_, r, err := dbContainer.Exec(ctx, []string{"pg_isready", "-U", dbUser, "-d", dbName})
+	failOn(err)
 	read, err := io.ReadAll(r)
 	failOn(err)
-	t.Error(string(read))
-	execR, err := exec.Command("nc -zv localhost 5432").Output()
-	failOn(err)
-	t.Error(string(execR))
+	slog.With("result", read).InfoContext(ctx, "exec result")
 	failOn(migrate.Up(ctx, dbconn.Config{
 		User:     dbUser,
 		Password: dbPassword,
