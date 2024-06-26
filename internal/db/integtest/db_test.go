@@ -52,10 +52,10 @@ func setupDB(t *testing.T) {
 			// WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
 		},
 		Started: true,
-		Logger:  testcontainers.Logger,
+		Logger:  &myLogger{},
 	})
 	failOn(err)
-	time.Sleep(10 * time.Second) // just to try it?
+	time.Sleep(5 * time.Second) // just to try it?
 	host, err := dbContainer.Host(ctx)
 	failOn(err)
 	slog.With("host", host).InfoContext(ctx, "host")
@@ -92,4 +92,14 @@ func failOn(err error) {
 
 func Test_it(t *testing.T) {
 	setupDB(t)
+}
+
+type myLogger struct{}
+
+func (m *myLogger) Printf(format string, v ...interface{}) {
+	l := slog.Default()
+	for i, v := range v {
+		l.With(strconv.Itoa(i), v)
+	}
+	l.Info("printf inside docker")
 }
