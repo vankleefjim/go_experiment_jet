@@ -52,7 +52,7 @@ func setupDB(t *testing.T) {
 			// WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
 		},
 		Started: true,
-		Logger:  testcontainers.TestLogger(t),
+		Logger:  testcontainers.Logger,
 	})
 	failOn(err)
 	time.Sleep(10 * time.Second) // just to try it?
