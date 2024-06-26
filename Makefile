@@ -18,7 +18,7 @@ docker-jet: migrate-up
 	.
 
 gen-models: docker-jet
-	docker run --env-file .env --network host -v .:/work jet
+	docker run --name jet --env-file .env --network host -v .:/work jet
 
 gen-models2: migrate-up
 	jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen

@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"strconv"
 	"testing"
 	"time"
@@ -70,6 +71,9 @@ func setupDB(t *testing.T) {
 	read, err := io.ReadAll(r)
 	failOn(err)
 	t.Error(string(read))
+	execR, err := exec.Command("telnet localhost 5432").Output()
+	failOn(err)
+	t.Error(string(execR))
 	failOn(migrate.Up(ctx, dbconn.Config{
 		User:     dbUser,
 		Password: dbPassword,
