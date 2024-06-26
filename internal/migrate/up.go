@@ -2,6 +2,7 @@ package migrate
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -23,7 +24,12 @@ func UpCmd(cfg dbconn.Config) *cobra.Command {
 	c := &cobra.Command{
 		Use: "up",
 		Run: func(cmd *cobra.Command, _ []string) {
-			err := Up(cmd.Context(), cfg)
+			dbConn, err := dbconn.SQLConnect(cfg)
+			if err != nil {
+				slog.With("err", err).ErrorContext(cmd.Context(), "unable to connect to db")
+				os.Exit(1)
+			}
+			err = Up(cmd.Context(), dbConn)
 			if err != nil {
 				slog.With("err", err).ErrorContext(cmd.Context(), "unable to migrate up")
 				os.Exit(1)
@@ -36,8 +42,7 @@ func UpCmd(cfg dbconn.Config) *cobra.Command {
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-func Up(ctx context.Context, cfg dbconn.Config) error {
-	conn := must(dbconn.SQLConnect(cfg))
+func Up(ctx context.Context, conn *sql.DB) error {
 	driver := must(postgres.WithInstance(conn, &postgres.Config{}))
 
 	migrationFiles, err := iofs.New(migrationsFS, "migrations")

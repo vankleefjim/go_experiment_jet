@@ -45,7 +45,7 @@ func (db *TodoDB) GetByID(ctx context.Context, id uuid.UUID) (model.Todo, error)
 	return todos[0], nil
 }
 
-func (db *TodoDB) Create(ctx context.Context, todo model.Todo) error {
+func (db *TodoDB) Create(ctx context.Context, todo *model.Todo) error {
 	insertStmt := Todo.INSERT(Todo.AllColumns).MODEL(todo)
 	_, err := insertStmt.ExecContext(ctx, db.conn)
 	if err != nil {
