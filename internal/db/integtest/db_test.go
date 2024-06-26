@@ -52,7 +52,7 @@ func setupDB(t *testing.T) {
 		Logger:  testcontainers.TestLogger(t),
 	})
 	failOn(err)
-	time.Sleep(time.Second) // just to try it?
+	time.Sleep(10 * time.Second) // just to try it?
 	host, err := dbContainer.Host(ctx)
 	failOn(err)
 	slog.With("host", host).InfoContext(ctx, "host")
