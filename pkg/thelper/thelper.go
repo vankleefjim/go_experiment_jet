@@ -17,6 +17,7 @@ func FixMonotonicTimePtr() cmp.Option {
 			return true
 		}
 
-		return x.Equal(*y)
+		// truncate(0) takes away monotonic clock
+		return x.Truncate(0).Equal(y.Truncate(0))
 	})
 }
