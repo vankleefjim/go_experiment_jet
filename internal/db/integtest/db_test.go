@@ -101,5 +101,6 @@ func (m *myLogger) Printf(format string, v ...interface{}) {
 	for i, v := range v {
 		l.With(strconv.Itoa(i), v)
 	}
+	l.With("message", format)
 	l.Info("printf inside docker")
 }
