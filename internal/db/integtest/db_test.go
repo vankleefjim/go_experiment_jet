@@ -16,7 +16,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	setupDB()
+	//setupDB()
 	// if os.Getenv("INTEGRATION_TEST") != "true" {
 	// 	return
 	// }
@@ -34,7 +34,7 @@ var (
 	dbPortStr = strconv.Itoa(dbPort)
 )
 
-func setupDB() {
+func setupDB(t *testing.T) {
 	ctx := context.Background()
 
 	dbContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -49,6 +49,7 @@ func setupDB() {
 			WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
 		},
 		Started: true,
+		Logger:  testcontainers.TestLogger(t),
 	})
 	failOn(err)
 	time.Sleep(time.Second) // just to try it?
@@ -80,5 +81,5 @@ func failOn(err error) {
 }
 
 func Test_it(t *testing.T) {
-	slog.Info("anything")
+	setupDB(t)
 }
