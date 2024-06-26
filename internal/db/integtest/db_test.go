@@ -66,7 +66,7 @@ func setupDB() {
 		User:     dbUser,
 		Password: dbPassword,
 		Name:     dbName,
-		Address:  "localhost",
+		Address:  host,
 		Port:     dbPort,
 	}))
 }
