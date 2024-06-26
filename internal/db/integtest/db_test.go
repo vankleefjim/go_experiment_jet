@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/vankleefjim/go_experiment_jet/internal/migrate"
@@ -43,10 +42,13 @@ func setupDB(t *testing.T) {
 			ExposedPorts: []string{dbPortStr},
 			Env: map[string]string{
 				"POSTGRES_USER":     dbUser,
+				"PGUSER":            dbUser,
 				"POSTGRES_PASSWORD": dbPassword,
 				"POSTGRES_DB":       dbName,
 			},
-			WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
+			WaitingFor: wait.ForExec([]string{
+				"pg_isready", "-U", dbUser, "-d", dbName}),
+			// WaitingFor: wait.ForListeningPort(nat.Port(dbPortStr + "/tcp")),
 		},
 		Started: true,
 		Logger:  testcontainers.TestLogger(t),
