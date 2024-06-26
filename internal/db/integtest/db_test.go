@@ -99,8 +99,8 @@ type myLogger struct{}
 func (m *myLogger) Printf(format string, v ...interface{}) {
 	l := slog.Default()
 	for i, v := range v {
-		l.With(strconv.Itoa(i), v)
+		l = l.With(strconv.Itoa(i), v)
 	}
-	l.With("message", format)
+	l = l.With("message", format)
 	l.Info("printf inside docker")
 }
