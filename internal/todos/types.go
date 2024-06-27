@@ -42,7 +42,7 @@ type GetOneResponse struct {
 	Todo Todo `json:"todo"`
 }
 
-func FromModel(in model.Todo) Todo {
+func FromModel(in *model.Todo) Todo {
 	return Todo{
 		ID:   in.ID,
 		Task: in.Task,
@@ -50,8 +50,8 @@ func FromModel(in model.Todo) Todo {
 	}
 }
 
-func ToModel(in Todo) model.Todo {
-	return model.Todo{
+func ToModel(in Todo) *model.Todo {
+	return &model.Todo{
 		ID:   in.ID,
 		Task: in.Task,
 		Due:  in.Due,

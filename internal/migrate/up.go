@@ -1,11 +1,15 @@
 package migrate
 
 import (
+	"context"
+	"database/sql"
+	"embed"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/dbconn"
+	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
 
 	"github.com/spf13/cobra"
 
@@ -13,29 +17,49 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
-func Up(cfg dbconn.Config) *cobra.Command {
+func UpCmd(cfg dbconn.Config) *cobra.Command {
 	c := &cobra.Command{
 		Use: "up",
-		Run: func(cmd *cobra.Command, args []string) {
-			conn := must(dbconn.SQLConnect(cfg))
-			driver := must(postgres.WithInstance(conn, &postgres.Config{}))
-			migrator := must(migrate.NewWithDatabaseInstance("file://./migrations", "postgres", driver))
-
-			if err := migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-				slog.With("err", err).ErrorContext(cmd.Context(), "unable to migrate")
-				os.Exit(1)
-			}
-			version, dirty, err := migrator.Version()
+		Run: func(cmd *cobra.Command, _ []string) {
+			dbConn, err := dbconn.SQLConnect(cfg)
 			if err != nil {
-				slog.With("err", err).ErrorContext(cmd.Context(), "unable to get version")
+				slog.With("err", err).ErrorContext(cmd.Context(), "unable to connect to db")
 				os.Exit(1)
 			}
-			slog.With("new_version", version, "dirty", dirty).InfoContext(cmd.Context(), "successfully migrated")
+			err = Up(cmd.Context(), dbConn)
+			if err != nil {
+				slog.With("err", err).ErrorContext(cmd.Context(), "unable to migrate up")
+				os.Exit(1)
+			}
 		},
 	}
 	return c
+}
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
+func Up(ctx context.Context, conn *sql.DB) error {
+	driver := must(postgres.WithInstance(conn, &postgres.Config{}))
+
+	migrationFiles, err := iofs.New(migrationsFS, "migrations")
+	if err != nil {
+		return fmt.Errorf("unable to create iofs: %w", err)
+	}
+	migrator := must(migrate.NewWithInstance("iofs", migrationFiles, "postgres", driver))
+
+	if err := migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("unable to migrate: %w", err)
+	}
+	version, dirty, err := migrator.Version()
+	if err != nil {
+		return fmt.Errorf("unable to get version: %w", err)
+	}
+	slog.With("new_version", version, "dirty", dirty).InfoContext(ctx, "successfully migrated")
+	return nil
 }
 
 func must[T any](x T, err error) T {
