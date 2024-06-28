@@ -19,7 +19,7 @@ type todoTable struct {
 	// Columns
 	ID   postgres.ColumnString
 	Task postgres.ColumnString
-	Due  postgres.ColumnTimestamp
+	Due  postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -62,7 +62,7 @@ func newTodoTableImpl(schemaName, tableName, alias string) todoTable {
 	var (
 		IDColumn       = postgres.StringColumn("id")
 		TaskColumn     = postgres.StringColumn("task")
-		DueColumn      = postgres.TimestampColumn("due")
+		DueColumn      = postgres.TimestampzColumn("due")
 		allColumns     = postgres.ColumnList{IDColumn, TaskColumn, DueColumn}
 		mutableColumns = postgres.ColumnList{TaskColumn, DueColumn}
 	)
