@@ -115,6 +115,45 @@ func Test_Todo_DeleteNonExistent(t *testing.T) {
 	}
 }
 
+func Test_Todo_SetDue(t *testing.T) {
+	ctx := context.Background()
+	t1 := &model.Todo{
+		ID:   uuid.New(),
+		Task: "test something",
+		Due:  ptr(time.Now()),
+	}
+	if err := todoDB.Create(ctx, t1); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := todoDB.Delete(ctx, t1.ID)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+
+	newDue := time.Now().Add(time.Hour).Add(10 * time.Minute)
+	err := todoDB.SetDue(ctx, t1.ID, newDue)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// to check it wasn't deleted
+	t1R, err := todoDB.GetByID(ctx, t1.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !thelper.TimeEqual(newDue, *t1R.Due) {
+		t.Errorf("due. Diff:(+got-want)\n%s", cmp.Diff(t1R.Due, newDue))
+	}
+}
+
+func Test_Todo_SetDue_Nonexistent(t *testing.T) {
+	err := todoDB.SetDue(context.Background(), uuid.New(), time.Now())
+	if !errors.As(err, ptr(&db.NotFoundError{})) {
+		t.Errorf("expected err of type %T but got %v", &db.NotFoundError{}, err)
+	}
+}
+
 // helper funcs
 
 func todoIDLess(x, y *model.Todo) bool {

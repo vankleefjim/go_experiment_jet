@@ -12,6 +12,10 @@ func FixMonotonicTimePtr() cmp.Option {
 			return x == y
 		}
 
-		return x.Truncate(time.Millisecond).Equal(y.Truncate(time.Millisecond))
+		return TimeEqual(*x, *y)
 	})
+}
+
+func TimeEqual(x, y time.Time) bool {
+	return x.Truncate(time.Millisecond).Equal(y.Truncate(time.Millisecond))
 }
