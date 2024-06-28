@@ -23,6 +23,9 @@ type TodoDB struct {
 func NewTodo(conn *sql.DB) *TodoDB { return &TodoDB{conn: conn} }
 
 func (db *TodoDB) GetAll(ctx context.Context) ([]*model.Todo, error) {
+	// TODO:
+	// This loads everything into memory at once, which is likely not very smart.
+	// I didn't find jet to natively support a cursor or something.
 	todos := []*model.Todo{}
 	getAllStmt := Todo.SELECT(Todo.AllColumns)
 	err := getAllStmt.QueryContext(ctx, db.conn, &todos)
@@ -110,20 +113,17 @@ func (db *TodoDB) SetDue(ctx context.Context, id uuid.UUID, due time.Time) (err 
 }
 
 func (db *TodoDB) getOne(ctx context.Context, id uuid.UUID, conn qrm.Queryable) (*model.Todo, error) {
-	todos := []*model.Todo{}
+	todo := &model.Todo{}
 
 	getByIDStmt := Todo.SELECT(Todo.AllColumns).WHERE(Todo.ID.EQ(UUID(id)))
-	err := getByIDStmt.QueryContext(ctx, conn, &todos)
+	err := getByIDStmt.QueryContext(ctx, conn, todo)
 	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return nil, newTodoNotFoundError(fmt.Sprintf("id = %q", id))
+		}
 		return nil, fmt.Errorf("unable to query all todos: %w", err)
 	}
-	if len(todos) > 1 {
-		return nil, fmt.Errorf("found %d entries with ID %q", len(todos), id)
-	}
-	if len(todos) == 0 {
-		return nil, newTodoNotFoundError(fmt.Sprintf("id = %q", id))
-	}
-	return todos[0], nil
+	return todo, nil
 }
 
 func newTodoNotFoundError(identifier string) *NotFoundError {
