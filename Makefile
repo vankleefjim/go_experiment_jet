@@ -10,7 +10,7 @@ migrate-up:
 	go run cmd/migrate/main.go up
 
 run: start gen-models
-	go run cmd/main/main.go
+	go run cmd/apiserver/main.go
 
 docker-jet: migrate-up
 	docker build -f Dockerfile.jet -t jet \

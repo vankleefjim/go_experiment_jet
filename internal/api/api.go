@@ -4,16 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/config"
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
-	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
 	"github.com/vankleefjim/go_experiment_jet/internal/todos"
 	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
+	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
 
 	"log/slog"
 )
 
-func Routes(ctx context.Context, cfg config.Server) *http.ServeMux {
+func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.ServeMux {
 	// Create the dependencies here.
 	// If possible, use the ctx to control if something needs to be stopped or similar
 	// Would be best if only the shared ones are here and the others
@@ -26,9 +25,6 @@ func Routes(ctx context.Context, cfg config.Server) *http.ServeMux {
 			slog.With("err", cErr).ErrorContext(ctx, "failed closing db connection")
 		}
 	}()
-
-	// This extra level is not needed when writing a microservice
-	mux := http.NewServeMux()
 
 	// TODO things like CORS
 

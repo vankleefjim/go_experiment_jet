@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
-	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
 	"github.com/vankleefjim/go_experiment_jet/pkg/collections"
+	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
 
 	"github.com/google/uuid"
 )

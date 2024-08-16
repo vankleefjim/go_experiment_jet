@@ -10,8 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/api"
-	"github.com/vankleefjim/go_experiment_jet/internal/config"
+	"github.com/caarlos0/env/v9"
 )
 
 type Server struct {
@@ -25,14 +24,22 @@ func New() *Server {
 	}
 }
 
-func (s *Server) Run(cfg config.Server) {
+func (s *Server) Run(registerRoutes func(context.Context, *http.ServeMux)) {
+	cfg := Config{}
+	err := env.Parse(&cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	ctx, listenShutdown := setupShutdown(s.Shutdown)
 	go listenShutdown()
 
-	mux := api.Routes(ctx, cfg)
+	mux := http.NewServeMux()
+	registerRoutes(ctx, mux)
+
 	httpServer := &http.Server{
 		Handler: mux,
-		Addr:    addr(cfg.HTTP),
+		Addr:    addr(cfg),
 	}
 
 	s.httpServer = httpServer
@@ -52,7 +59,7 @@ func (s *Server) Run(cfg config.Server) {
 	<-s.done
 }
 
-func addr(cfg config.HTTP) string {
+func addr(cfg Config) string {
 	return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 }
 
