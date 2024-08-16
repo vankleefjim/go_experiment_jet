@@ -7,6 +7,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/vankleefjim/go_experiment_jet/internal/ui/components"
+	"github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
 	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
 )
 
@@ -36,6 +37,10 @@ func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.S
 
 	// TODO gzip this or does that already happen?
 	mux.Handle("GET /ui", templ.Handler(components.Home()))
+
+	mux.Handle("GET "+consts.PathTodos, templ.Handler(components.NYI()))
+
+	mux.Handle("PUT /ui/todo", httphelper.AddHeader("HX-Trigger", consts.TriggerTodosUpdate, templ.Handler(components.NYI())))
 	return mux
 }
 

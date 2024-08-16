@@ -1,9 +1,12 @@
 package components
 
+import "github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
+
 templ base() {
 	<html>
 		<head>
 			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			// TODO should be copied into this project
 			<script src="https://unpkg.com/htmx.org@2.0.2"></script>
 			// TODO css
@@ -17,9 +20,41 @@ templ base() {
 
 templ Home() {
 	@base() {
-		<div>Hello world!</div>
+		@TodoListU()
 	}
 }
 
 templ TodoListU() {
+	<h1>Your Todos</h1>
+	<div id={ consts.IDTodosList }>
+		// todoUpdate is a custom trigger.
+		<div
+			hx-get={ consts.PathTodos }
+			hx-trigger={ "load " + consts.TriggerTodosUpdate }
+			hx-swap="outerHTML"
+		>
+			// TODO something like 
+			// <img class="htmx-indicator" src="/spinner.gif">
+			@loading()
+		</div>
+	</div>
+	<br/>
+	<h2>Add new Todo</h2>
+	<form
+		hx-put="/ui/todo"
+		hx-swap="none"
+		hx-on::after-request=" if(event.detail.successful) this.reset()"
+	>
+		<label>
+			Task
+			<input name="task" type="text"/>
+		</label>
+		<br/>
+		<label>
+			Due
+			<input name="due" type="datetime-local"/> // todo this looks bad :D
+		</label>
+		<br/>
+		<button type="submit" value="Submit">Submit</button>
+	</form>
 }
