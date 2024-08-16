@@ -1,6 +1,9 @@
 package components
 
-import "github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
+import (
+	"github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
+	"time"
+)
 
 templ base() {
 	<html>
@@ -24,16 +27,17 @@ templ Home() {
 	}
 }
 
+const htmlDateHourMinute = "2006-01-02T15:04"
+
 templ TodoListU() {
 	<h1>Your Todos</h1>
 	<div id={ consts.IDTodosList }>
-		// todoUpdate is a custom trigger.
 		<div
 			hx-get={ consts.PathTodos }
 			hx-trigger={ "load " + consts.TriggerTodosUpdate }
 			hx-swap="outerHTML"
 		>
-			// TODO something like 
+			// TODO something like
 			// <img class="htmx-indicator" src="/spinner.gif">
 			@loading()
 		</div>
@@ -47,12 +51,13 @@ templ TodoListU() {
 	>
 		<label>
 			Task
-			<input name="task" type="text"/>
+			<input name="task" type="text" required="required"/>
 		</label>
 		<br/>
 		<label>
 			Due
-			<input name="due" type="datetime-local"/> // todo this looks bad :D
+			// Yeah there are some timezone issues with this but whatever.
+			<input name="due" type="datetime-local" min={ time.Now().Add(time.Minute).Format(htmlDateHourMinute) }/> // todo this looks bad :D
 		</label>
 		<br/>
 		<button type="submit" value="Submit">Submit</button>
