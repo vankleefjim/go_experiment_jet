@@ -1,0 +1,25 @@
+package components
+
+templ base() {
+	<html>
+		<head>
+			<meta charset="UTF-8"/>
+			// TODO should be copied into this project
+			<script src="https://unpkg.com/htmx.org@2.0.2"></script>
+			// TODO css
+			<title>My todo app</title>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}
+
+templ Home() {
+	@base() {
+		<div>Hello world!</div>
+	}
+}
+
+templ TodoListU() {
+}

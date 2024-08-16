@@ -1,15 +1,13 @@
-package api
+package ui
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
-	"github.com/vankleefjim/go_experiment_jet/internal/db"
-	"github.com/vankleefjim/go_experiment_jet/internal/todos"
-	"github.com/vankleefjim/go_experiment_jet/pkg/dbconn"
+	"github.com/a-h/templ"
+	"github.com/vankleefjim/go_experiment_jet/internal/ui/components"
 	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
-
-	"log/slog"
 )
 
 func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.ServeMux {
@@ -17,25 +15,27 @@ func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.S
 	// If possible, use the ctx to control if something needs to be stopped or similar
 	// Would be best if only the shared ones are here and the others
 	// directly in the packages that define the routes.
-	dbConn := must(dbconn.SQLConnect(cfg.DB))
-	go func() {
-		<-ctx.Done()
-		cErr := dbConn.Close()
-		if cErr != nil {
-			slog.With("err", cErr).ErrorContext(ctx, "failed closing db connection")
-		}
-	}()
+	// dbConn := must(dbconn.SQLConnect(cfg.DB))
+	// go func() {
+	// 	<-ctx.Done()
+	// 	cErr := dbConn.Close()
+	// 	if cErr != nil {
+	// 		slog.With("err", cErr).ErrorContext(ctx, "failed closing db connection")
+	// 	}
+	// }()
 
 	// TODO things like CORS
 
 	mux.Handle("/ping", httphelper.Log(pong()))
 
-	todoDB := db.NewTodo(dbConn)
-	mux.Handle("/todo/",
-		httphelper.Log(
-			http.StripPrefix("/todo",
-				todos.New(todoDB).Routes(),
-			)))
+	// mux.Handle("/ui/",
+	// 	httphelper.Log(
+	// 		http.StripPrefix("/ui",
+	// 			todos.New(todoDB).Routes(),
+	// 		)))
+
+	// TODO gzip this or does that already happen?
+	mux.Handle("GET /ui", templ.Handler(components.Home()))
 	return mux
 }
 

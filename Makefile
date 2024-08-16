@@ -10,7 +10,10 @@ migrate-up:
 	go run cmd/migrate/main.go up
 
 run: start gen-models
-	go run cmd/apiserver/main.go
+	HTTP_PORT=8081 go run cmd/apiserver/main.go
+
+run-ui: gen-templ
+	HTTP_PORT=8082 go run cmd/ui/main.go
 
 docker-jet: migrate-up
 	docker build -f Dockerfile.jet -t jet \
@@ -22,6 +25,9 @@ gen-models: docker-jet
 
 gen-models2: migrate-up
 	jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen
+
+gen-templ:
+	templ generate
 
 start:
 	${COMPOSE_CMD} up -d --wait
