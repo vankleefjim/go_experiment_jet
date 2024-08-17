@@ -32,6 +32,7 @@ gen-templ:
 gen-proto:
 # todo: to be save create dockerfile in here.
 	docker run -v $(shell pwd):/defs namely/protoc-all -f protos/todos.proto -l go -o internal
+	docker run -v $(shell pwd):/defs namely/gen-grpc-gateway -f protos/todos.proto -s TodoService -o internal/grpc/gateway
 
 start:
 	${COMPOSE_CMD} up -d --wait

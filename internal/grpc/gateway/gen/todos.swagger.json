@@ -1,0 +1,104 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "todos.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/todos": {
+      "get": {
+        "operationId": "TodoService_GetAll",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/todosGetAllResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "TodoService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "todosGetAllResponse": {
+      "type": "object",
+      "properties": {
+        "todos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/todosTodo"
+          }
+        }
+      }
+    },
+    "todosTodo": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "$ref": "#/definitions/todosUUID"
+        },
+        "task": {
+          "type": "string"
+        },
+        "due": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "todosUUID": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "title": "not supported natively lol"
+        }
+      }
+    }
+  }
+}

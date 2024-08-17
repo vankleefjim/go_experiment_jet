@@ -74,7 +74,7 @@ func (s *Server) Run(
 				if errors.Is(err, grpc.ErrServerStopped) {
 					slog.Info("grpc server shut down")
 				} else {
-					slog.With("err", err).Error("unable to start HTTP server")
+					slog.With("err", err).Error("unable to start GRPC server")
 					panic(err)
 				}
 			}

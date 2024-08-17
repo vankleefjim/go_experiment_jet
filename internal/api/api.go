@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
 	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
 	"github.com/vankleefjim/go_experiment_jet/internal/todos"
@@ -39,6 +40,8 @@ func (a *API) Shutdown(_ context.Context) {
 }
 
 func (a *API) RegisterRoutes(mux *http.ServeMux) *http.ServeMux {
+	runtime.NewServeMux()
+
 	// TODO things like CORS
 	mux.Handle("/ping", httphelper.Log(pong()))
 

@@ -1,12 +1,18 @@
 syntax = "proto3";
+
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 option go_package = "grpc/pbtodo";
 
 package todos;
 
 service TodoService {
-    rpc GetAll (GetAllRequest) returns (GetAllResponse) {}
+    rpc GetAll (GetAllRequest) returns (GetAllResponse) {
+        option (google.api.http) = {
+            get: "/todos"
+          };
+    }
 }
 
 message UUID {
