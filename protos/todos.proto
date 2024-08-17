@@ -1,0 +1,28 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "grpc/pbtodo";
+
+package todos;
+
+service TodoService {
+    rpc GetAll (GetAllRequest) returns (GetAllResponse) {}
+}
+
+message UUID {
+    // not supported natively lol
+    string value = 1;
+}
+
+message Todo{
+    UUID ID = 1;
+    string task = 2;
+    google.protobuf.Timestamp due = 3;
+}
+
+message GetAllRequest{
+}
+message GetAllResponse{
+    repeated Todo todos = 1;
+}
+

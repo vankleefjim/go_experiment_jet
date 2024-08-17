@@ -1,29 +1,34 @@
 package ui
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
 	"github.com/vankleefjim/go_experiment_jet/internal/ui/components"
 	"github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
 	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.ServeMux {
-	// Create the dependencies here.
-	// If possible, use the ctx to control if something needs to be stopped or similar
-	// Would be best if only the shared ones are here and the others
-	// directly in the packages that define the routes.
-	// dbConn := must(dbconn.SQLConnect(cfg.DB))
-	// go func() {
-	// 	<-ctx.Done()
-	// 	cErr := dbConn.Close()
-	// 	if cErr != nil {
-	// 		slog.With("err", cErr).ErrorContext(ctx, "failed closing db connection")
-	// 	}
-	// }()
+type ui struct {
+	apiClient pbtodo.TodoServiceClient
+}
+
+func New(cfg Config) *ui {
+	grpcClient, err := grpc.NewClient(cfg.APIGRPCAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		slog.With("err", err).Error("failed creating todo client")
+		panic(err)
+	}
+	return &ui{
+		apiClient: pbtodo.NewTodoServiceClient(grpcClient),
+	}
+}
+
+func (u *ui) RegisterRoutes(mux *http.ServeMux) *http.ServeMux {
 
 	// TODO things like CORS
 
@@ -38,10 +43,28 @@ func RegisterRoutes(ctx context.Context, cfg Config, mux *http.ServeMux) *http.S
 	// TODO gzip this or does that already happen?
 	mux.Handle("GET /ui", templ.Handler(components.Home()))
 
-	mux.Handle("GET "+consts.PathTodos, templ.Handler(components.NYI()))
+	mux.Handle("GET "+consts.PathTodos, u.getAllTodos())
 
 	mux.Handle("PUT /ui/todo", httphelper.AddHeader("HX-Trigger", consts.TriggerTodosUpdate, templ.Handler(components.NYI())))
 	return mux
+}
+
+func (u *ui) getAllTodos() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		resp, err := u.apiClient.GetAll(ctx, &pbtodo.GetAllRequest{})
+		if err != nil {
+			slog.With("err", err).ErrorContext(ctx, "failed getting all todos")
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+		err = components.TodoList(resp.Todos).Render(ctx, w)
+		if err != nil {
+			slog.With("err", err, "todos", resp.Todos).ErrorContext(ctx, "failed rendering todolist")
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func pong() http.Handler {

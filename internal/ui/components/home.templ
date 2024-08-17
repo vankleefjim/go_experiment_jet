@@ -1,7 +1,9 @@
 package components
 
 import (
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
 	"github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
 
@@ -24,6 +26,8 @@ templ base() {
 templ Home() {
 	@base() {
 		@TodoListU()
+		<br/>
+		@AddTodo()
 	}
 }
 
@@ -42,7 +46,31 @@ templ TodoListU() {
 			@loading()
 		</div>
 	</div>
-	<br/>
+}
+
+func timeOrDash(t *timestamppb.Timestamp) string {
+	if t == nil {
+		return "-"
+	}
+	return t.AsTime().Format(htmlDateHourMinute)
+}
+
+templ TodoList(todos []*pbtodo.Todo) {
+	if len(todos) == 0 {
+		<p>Nothing here yet</p>
+	}
+	<ul>
+		for _,todo := range todos {
+			<li>
+				Task: { todo.Task }
+				<br/>
+				Due: { timeOrDash(todo.Due) }
+			</li>
+		}
+	</ul>
+}
+
+templ AddTodo() {
 	<h2>Add new Todo</h2>
 	<form
 		hx-put="/ui/todo"

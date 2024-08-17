@@ -1,13 +1,17 @@
 package todos
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
 	"github.com/vankleefjim/go_experiment_jet/pkg/collections"
 	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/google/uuid"
 )
@@ -23,7 +27,7 @@ func (t *TodoServer) Routes() http.Handler {
 
 	mux.HandleFunc("/", httphelper.MethodPlexMiddleware(
 		httphelper.MethodPlexer{
-			Get: httphelper.StructResponse[GetAllResponse](t.getAll),
+			//Get: httphelper.StructResponse[GetAllResponse](t.getAll),
 			Put: httphelper.StructResponse[PutResponse](t.put),
 		},
 	))
@@ -36,18 +40,15 @@ func (t *TodoServer) Routes() http.Handler {
 	return mux
 }
 
-func (t *TodoServer) getAll(r *http.Request) (*httphelper.OK[GetAllResponse], *httphelper.HTTPError) {
-	ctx := r.Context()
-
+func (t *TodoServer) GetAll(ctx context.Context, r *pbtodo.GetAllRequest) (*pbtodo.GetAllResponse, error) {
 	todos, err := t.db.GetAll(ctx)
 	if err != nil {
-		return nil, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
+		return nil, status.Error(codes.Internal, "unable to find todos")
 	}
 
-	return &httphelper.OK[GetAllResponse]{
-		Body: GetAllResponse{
-			Todos: collections.Map(todos, FromModel),
-		}, Status: http.StatusOK}, nil
+	return &pbtodo.GetAllResponse{
+		Todos: collections.Map(todos, PBFromModel),
+	}, nil
 }
 
 func (t *TodoServer) get(r *http.Request) (*httphelper.OK[GetOneResponse], *httphelper.HTTPError) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/caarlos0/env/v9"
 	"github.com/vankleefjim/go_experiment_jet/internal/ui"
+	"github.com/vankleefjim/go_experiment_jet/pkg/lifecycle"
 	"github.com/vankleefjim/go_experiment_jet/pkg/server"
 )
 
@@ -16,5 +17,14 @@ func main() {
 		panic(err)
 	}
 
-	server.New().Run(func(ctx context.Context, mux *http.ServeMux) { ui.RegisterRoutes(ctx, cfg, mux) })
+	lcManager := lifecycle.NewManager(context.Background())
+
+	s := server.New()
+	lcManager.Register(s)
+
+	uiServer := ui.New(cfg)
+	s.Run(
+		func(mux *http.ServeMux) { uiServer.RegisterRoutes(mux) },
+		nil,
+	)
 }

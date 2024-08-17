@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/db/.gen/things/public/model"
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
 )
@@ -47,6 +49,25 @@ func FromModel(in *model.Todo) Todo {
 		ID:   in.ID,
 		Task: in.Task,
 		Due:  in.Due,
+	}
+}
+
+func PBID(in uuid.UUID) *pbtodo.UUID {
+	return &pbtodo.UUID{Value: in.String()}
+}
+
+func PBTime(t *time.Time) *timestamppb.Timestamp {
+	if t == nil {
+		return nil
+	}
+	return timestamppb.New(*t)
+}
+
+func PBFromModel(in *model.Todo) *pbtodo.Todo {
+	return &pbtodo.Todo{
+		ID:   PBID(in.ID),
+		Task: in.Task,
+		Due:  PBTime(in.Due),
 	}
 }
 
