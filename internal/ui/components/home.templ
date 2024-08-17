@@ -1,0 +1,95 @@
+package components
+
+import (
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
+	"github.com/vankleefjim/go_experiment_jet/internal/ui/consts"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"strings"
+	"time"
+)
+
+templ base() {
+	<html>
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			// TODO should be copied into this project
+			<script src="https://unpkg.com/htmx.org@2.0.2"></script>
+			// TODO css
+			<title>My todo app</title>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}
+
+templ Home() {
+	@base() {
+		@TodoListU()
+		<br/>
+		@AddTodo()
+	}
+}
+
+const HTMLDateHourMinute = "2006-01-02T15:04"
+
+templ TodoListU() {
+	<h1>Your Todos</h1>
+	<div id={ consts.IDTodosList }>
+		// TODO think about replacing the trigger from http header with Websocket connection
+		<div
+			hx-get={ consts.PathTodos }
+			hx-trigger={ "load, " + consts.TriggerTodosUpdate + " from:body" }
+			hx-swap="innerHTML"
+		>
+			// TODO something like
+			// <img class="htmx-indicator" src="/spinner.gif">
+			@loading()
+		</div>
+	</div>
+}
+
+func timeOrDash(t *timestamppb.Timestamp) string {
+	if t == nil {
+		return "-"
+	}
+	return strings.TrimSuffix("in "+time.Until(t.AsTime()).Round(time.Minute).String(), "0s")
+}
+
+templ TodoList(todos []*pbtodo.Todo) {
+	if len(todos) == 0 {
+		<p>Nothing here yet</p>
+	}
+	<ul>
+		for _,todo := range todos {
+			<li>
+				Task: { todo.Task }
+				<br/>
+				Due: { timeOrDash(todo.Due) }
+			</li>
+		}
+	</ul>
+}
+
+templ AddTodo() {
+	<h2>Add new Todo</h2>
+	<form
+		hx-put="/ui/todo"
+		hx-swap="none"
+		hx-on::after-request=" if(event.detail.successful) this.reset()"
+	>
+		<label>
+			Task
+			<input name="task" type="text" required="required"/>
+		</label>
+		<br/>
+		<label>
+			Due
+			// Yeah there are some timezone issues with this but whatever.
+			<input name="due" type="datetime-local" min={ time.Now().Add(time.Minute).Format(consts.HTMLDateHourMinute) }/> // todo this looks bad :D
+		</label>
+		<br/>
+		<button type="submit" value="Submit">Submit</button>
+	</form>
+}

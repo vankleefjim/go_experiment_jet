@@ -24,14 +24,7 @@ func StructResponse[T any](handler func(r *http.Request) (*OK[T], *HTTPError)) h
 				"cause", hErr.Cause.Error(),
 				"message", hErr.Message,
 			).ErrorContext(r.Context(), "http error")
-			w.WriteHeader(hErr.Code)
-			_, err := w.Write([]byte(hErr.Message))
-			if err != nil {
-				slog.With(
-					"error", err.Error(),
-					"message", hErr.Message).
-					ErrorContext(r.Context(), "unable to write error message")
-			}
+			http.Error(w, hErr.Message, hErr.Code)
 			return
 		}
 		if response == nil {

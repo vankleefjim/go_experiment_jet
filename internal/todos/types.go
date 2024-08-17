@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/db/.gen/things/public/model"
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
 )
@@ -15,13 +17,15 @@ type Todo struct {
 	Due  *time.Time `json:"due"`
 }
 
-func (t Todo) Validate() error {
+func Validate(t *pbtodo.Todo) error {
+	if t == nil {
+		return errors.New("todo may not be nil")
+	}
 	errs := []error{}
-
 	if t.Task == "" {
 		errs = append(errs, errors.New("task may not be empty"))
 	}
-	if t.Due != nil && t.Due.Before(time.Now()) {
+	if t.Due != nil && t.Due.AsTime().Before(time.Now()) {
 		errs = append(errs, errors.New("due may only be in the future"))
 	}
 
@@ -50,10 +54,38 @@ func FromModel(in *model.Todo) Todo {
 	}
 }
 
-func ToModel(in Todo) *model.Todo {
-	return &model.Todo{
-		ID:   in.ID,
+func PBID(in uuid.UUID) *pbtodo.UUID {
+	return &pbtodo.UUID{Value: in.String()}
+}
+
+func PBTime(t *time.Time) *timestamppb.Timestamp {
+	if t == nil {
+		return nil
+	}
+	return timestamppb.New(*t)
+}
+
+func TimeFromPB(t *timestamppb.Timestamp) *time.Time {
+	if t == nil {
+		return nil
+	}
+	return ptr(t.AsTime())
+}
+
+func PBFromModel(in *model.Todo) *pbtodo.Todo {
+	return &pbtodo.Todo{
+		ID:   PBID(in.ID),
 		Task: in.Task,
-		Due:  in.Due,
+		Due:  PBTime(in.Due),
 	}
 }
+
+func ToModel(in *pbtodo.Todo, id uuid.UUID) *model.Todo {
+	return &model.Todo{
+		ID:   id,
+		Task: in.Task,
+		Due:  TimeFromPB(in.Due),
+	}
+}
+
+func ptr[T any](v T) *T { return &v }

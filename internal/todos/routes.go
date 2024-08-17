@@ -1,13 +1,17 @@
 package todos
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/vankleefjim/go_experiment_jet/internal/db"
-	"github.com/vankleefjim/go_experiment_jet/internal/httphelper"
+	"github.com/vankleefjim/go_experiment_jet/internal/grpc/pbtodo"
 	"github.com/vankleefjim/go_experiment_jet/pkg/collections"
+	"github.com/vankleefjim/go_experiment_jet/pkg/httphelper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/google/uuid"
 )
@@ -23,8 +27,8 @@ func (t *TodoServer) Routes() http.Handler {
 
 	mux.HandleFunc("/", httphelper.MethodPlexMiddleware(
 		httphelper.MethodPlexer{
-			Get: httphelper.StructResponse[GetAllResponse](t.getAll),
-			Put: httphelper.StructResponse[PutResponse](t.put),
+			//Get: httphelper.StructResponse[GetAllResponse](t.getAll),
+			//Put: httphelper.StructResponse[PutResponse](t.put),
 		},
 	))
 	mux.HandleFunc("/{id}", httphelper.MethodPlexMiddleware(
@@ -36,18 +40,15 @@ func (t *TodoServer) Routes() http.Handler {
 	return mux
 }
 
-func (t *TodoServer) getAll(r *http.Request) (*httphelper.OK[GetAllResponse], *httphelper.HTTPError) {
-	ctx := r.Context()
-
+func (t *TodoServer) GetAll(ctx context.Context, r *pbtodo.GetAllRequest) (*pbtodo.GetAllResponse, error) {
 	todos, err := t.db.GetAll(ctx)
 	if err != nil {
-		return nil, httphelper.NewError("unable to find todos", http.StatusInternalServerError, err)
+		return nil, status.Error(codes.Internal, "unable to find todos")
 	}
 
-	return &httphelper.OK[GetAllResponse]{
-		Body: GetAllResponse{
-			Todos: collections.Map(todos, FromModel),
-		}, Status: http.StatusOK}, nil
+	return &pbtodo.GetAllResponse{
+		Todos: collections.Map(todos, PBFromModel),
+	}, nil
 }
 
 func (t *TodoServer) get(r *http.Request) (*httphelper.OK[GetOneResponse], *httphelper.HTTPError) {
@@ -71,29 +72,20 @@ func (t *TodoServer) get(r *http.Request) (*httphelper.OK[GetOneResponse], *http
 		Status: http.StatusOK}, nil
 }
 
-func (t *TodoServer) put(r *http.Request) (*httphelper.OK[PutResponse], *httphelper.HTTPError) {
-	ctx := r.Context()
-
-	todo := Todo{}
-	err := json.NewDecoder(r.Body).Decode(&todo)
+func (t *TodoServer) Put(ctx context.Context, r *pbtodo.PutRequest) (*pbtodo.PutResponse, error) {
+	err := Validate(r.Todo)
 	if err != nil {
-		return nil, httphelper.NewError("invalid request body", http.StatusBadRequest, fmt.Errorf("unable to decode json body: %w", err))
-	}
-
-	err = todo.Validate()
-	if err != nil {
-		return nil, httphelper.NewError(err.Error(), http.StatusBadRequest, fmt.Errorf("validation failed: %w", err))
+		return nil, status.Error(codes.InvalidArgument, fmt.Errorf("validation failed: %w", err).Error())
 	}
 
 	// Make sure to not accept ID from caller.
-	todo.ID = uuid.New()
-
-	err = t.db.Create(ctx, ToModel(todo))
+	newID := uuid.New()
+	r.Todo.ID = PBID(newID)
+	err = t.db.Create(ctx, ToModel(r.Todo, newID))
 	if err != nil {
-		return nil, httphelper.NewError("unable to create todo", http.StatusInternalServerError, fmt.Errorf("unable to create todo: %w", err))
+		slog.With("err", err, "todo", r.Todo).ErrorContext(ctx, "unable to create todo")
+		return nil, status.Error(codes.Internal, "unable to create todo")
 	}
 
-	return &httphelper.OK[PutResponse]{
-		Body:   PutResponse{Todo: todo},
-		Status: http.StatusOK}, nil
+	return &pbtodo.PutResponse{Todo: r.Todo}, nil
 }

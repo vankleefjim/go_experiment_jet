@@ -9,8 +9,11 @@ endif
 migrate-up:
 	go run cmd/migrate/main.go up
 
-run: start gen-models
-	go run cmd/main/main.go
+run: start gen-proto gen-models
+	HTTP_PORT=8080 GRPC_PORT=${API_GRPC_PORT} go run cmd/apiserver/main.go
+
+run-ui: gen-proto gen-templ
+	HTTP_PORT=8081 API_GRPC_ADDR=localhost:${API_GRPC_PORT} go run cmd/ui/main.go
 
 docker-jet: migrate-up
 	docker build -f Dockerfile.jet -t jet \
@@ -22,6 +25,13 @@ gen-models: docker-jet
 
 gen-models2: migrate-up
 	jet -dsn=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}?sslmode=disable -schema=public -path=./internal/db/.gen
+
+gen-templ:
+	templ generate
+
+gen-proto:
+# todo: to be save create dockerfile in here.
+	docker run -v $(shell pwd):/defs namely/protoc-all -f protos/todos.proto -l go -o internal
 
 start:
 	${COMPOSE_CMD} up -d --wait
