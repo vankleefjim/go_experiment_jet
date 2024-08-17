@@ -5,13 +5,14 @@ option go_package = "grpc/pbtodo";
 
 package todos;
 
-service TodoService {
-    rpc GetAll (GetAllRequest) returns (GetAllResponse) {}
-}
-
 message UUID {
     // not supported natively lol
     string value = 1;
+}
+
+service TodoService {
+    rpc GetAll (GetAllRequest) returns (GetAllResponse) {}
+    rpc Put(PutRequest) returns (PutResponse) {}
 }
 
 message Todo{
@@ -20,9 +21,16 @@ message Todo{
     google.protobuf.Timestamp due = 3;
 }
 
-message GetAllRequest{
-}
+message GetAllRequest{}
+
 message GetAllResponse{
     repeated Todo todos = 1;
 }
 
+message PutRequest{
+    Todo todo = 1; // You cannot set the ID.
+}
+
+message PutResponse{
+    Todo todo = 1;
+}

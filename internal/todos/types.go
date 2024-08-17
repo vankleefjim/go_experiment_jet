@@ -17,13 +17,15 @@ type Todo struct {
 	Due  *time.Time `json:"due"`
 }
 
-func (t Todo) Validate() error {
+func Validate(t *pbtodo.Todo) error {
+	if t == nil {
+		return errors.New("todo may not be nil")
+	}
 	errs := []error{}
-
 	if t.Task == "" {
 		errs = append(errs, errors.New("task may not be empty"))
 	}
-	if t.Due != nil && t.Due.Before(time.Now()) {
+	if t.Due != nil && t.Due.AsTime().Before(time.Now()) {
 		errs = append(errs, errors.New("due may only be in the future"))
 	}
 
@@ -63,6 +65,13 @@ func PBTime(t *time.Time) *timestamppb.Timestamp {
 	return timestamppb.New(*t)
 }
 
+func TimeFromPB(t *timestamppb.Timestamp) *time.Time {
+	if t == nil {
+		return nil
+	}
+	return ptr(t.AsTime())
+}
+
 func PBFromModel(in *model.Todo) *pbtodo.Todo {
 	return &pbtodo.Todo{
 		ID:   PBID(in.ID),
@@ -71,10 +80,12 @@ func PBFromModel(in *model.Todo) *pbtodo.Todo {
 	}
 }
 
-func ToModel(in Todo) *model.Todo {
+func ToModel(in *pbtodo.Todo, id uuid.UUID) *model.Todo {
 	return &model.Todo{
-		ID:   in.ID,
+		ID:   id,
 		Task: in.Task,
-		Due:  in.Due,
+		Due:  TimeFromPB(in.Due),
 	}
 }
+
+func ptr[T any](v T) *T { return &v }
